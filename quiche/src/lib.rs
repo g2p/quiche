@@ -806,6 +806,16 @@ impl Config {
         self.tls_ctx.load_verify_locations_from_directory(dir)
     }
 
+    /// Enables support for certificate compression (RFC8879).
+    ///
+    /// Note that if support wasn't enabled at build time, this does nothing.
+    pub fn compress_certificates(&mut self) -> Result<()> {
+        self.tls_ctx
+            .lock()
+            .unwrap()
+            .enable_certificate_compression()
+    }
+
     /// Configures whether to verify the peer's certificate.
     ///
     /// The default value is `true` for client connections, and `false` for
@@ -5291,11 +5301,12 @@ impl Connection {
         // If the active path failed, try to find a new candidate.
         if self.paths.get_active_path_id().is_err() {
             match self.paths.find_candidate_path() {
-                Some(pid) =>
+                Some(pid) => {
                     if self.paths.set_active_path(pid).is_err() {
                         // The connection cannot continue.
                         self.closed = true;
-                    },
+                    }
+                },
 
                 // The connection cannot continue.
                 None => self.closed = true,
@@ -6571,15 +6582,17 @@ impl Connection {
 
             frame::Frame::StreamDataBlocked { .. } => (),
 
-            frame::Frame::StreamsBlockedBidi { limit } =>
+            frame::Frame::StreamsBlockedBidi { limit } => {
                 if limit > MAX_STREAM_ID {
                     return Err(Error::InvalidFrame);
-                },
+                }
+            },
 
-            frame::Frame::StreamsBlockedUni { limit } =>
+            frame::Frame::StreamsBlockedUni { limit } => {
                 if limit > MAX_STREAM_ID {
                     return Err(Error::InvalidFrame);
-                },
+                }
+            },
 
             frame::Frame::NewConnectionId {
                 seq_num,
@@ -7679,6 +7692,7 @@ pub mod testing {
             config.set_max_idle_timeout(180_000);
             config.verify_peer(false);
             config.set_ack_delay_exponent(8);
+            config.compress_certificates().unwrap();
 
             Pipe::with_config(&mut config)
         }
@@ -12339,7 +12353,7 @@ mod tests {
             let mut frame_iter = frames.iter();
 
             assert_eq!(frame_iter.next().unwrap(), &frame::Frame::Datagram {
-                data: out.into(),
+                data: out.into()
             });
             assert_eq!(frame_iter.next(), None);
 
@@ -12373,7 +12387,7 @@ mod tests {
             let mut frame_iter = frames.iter();
 
             assert_eq!(frame_iter.next().unwrap(), &frame::Frame::Datagram {
-                data: out.into(),
+                data: out.into()
             });
             assert_eq!(frame_iter.next(), None);
 
