@@ -296,7 +296,7 @@ impl Context {
         #[cfg(any(feature = "brotlienc", feature = "brotlidec"))]
         map_result(unsafe {
             SSL_CTX_add_cert_compression_alg(
-                self.as_ptr(),
+                self.as_mut_ptr(),
                 2, // TLSEXT_cert_compression_brotli
                 #[cfg(feature = "brotlienc")]
                 Some(compress_brotli_cert),
