@@ -256,6 +256,7 @@ fn main() {
     {
         let pkgcfg = pkg_config::Config::new();
 
+        // Add brotli.
         if pkgcfg.probe("libbrotlienc").is_ok() {
             println!("cargo:rustc-cfg=feature=\"brotlienc\"");
         }
