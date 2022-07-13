@@ -101,7 +101,12 @@ pub fn connect(
     // Create the configuration for the QUIC connection.
     let mut config = quiche::Config::new(args.version).unwrap();
 
-    config.compress_certificates().unwrap();
+    match args.compression_algo.as_deref() {
+        Some("zlib") => config.compress_certificates_zlib().unwrap(),
+        Some("brotli") => config.compress_certificates_brotli().unwrap(),
+        Some(algo) => panic!("invalid compression algorithm: {}", algo),
+        _ => config.compress_certificates().unwrap(),
+    }
 
     config.verify_peer(!args.no_verify);
 
