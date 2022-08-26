@@ -238,7 +238,7 @@ pub fn connect(
 
     trace!("written {}", write);
     if args.print_io {
-        println!("wrote {}", write);
+        println!("out|{}", write);
     }
 
     let app_data_start = std::time::Instant::now();
@@ -295,7 +295,7 @@ pub fn connect(
 
                 trace!("{}: got {} bytes", local_addr, len);
                 if args.print_io {
-                    println!("read {}", len);
+                    println!("in|{}", len);
                 }
 
                 if let Some(target_path) = conn_args.dump_packet_path.as_ref() {
@@ -577,7 +577,7 @@ pub fn connect(
                         write
                     );
                     if args.print_io {
-                        println!("wrote {}", write);
+                        println!("out|{}", write);
                     }
                 }
             }
