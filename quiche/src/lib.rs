@@ -4731,6 +4731,11 @@ impl Connection {
         self.streams.readable()
     }
 
+    #[inline]
+    pub fn readable_drain(&mut self) -> StreamIter {
+        self.streams.readable_drain()
+    }
+
     /// Returns an iterator over streams that can be written to.
     ///
     /// A "writable" stream is a stream that has enough flow control capacity to
@@ -4771,6 +4776,17 @@ impl Connection {
         }
 
         self.streams.writable()
+    }
+
+    #[inline]
+    pub fn writable_drain(&mut self) -> StreamIter {
+        // If there is not enough connection-level send capacity, none of the
+        // streams are writable, so return an empty iterator.
+        if self.tx_cap == 0 {
+            return StreamIter::default();
+        }
+
+        self.streams.writable_drain()
     }
 
     /// Returns the maximum possible size of egress UDP payloads.
